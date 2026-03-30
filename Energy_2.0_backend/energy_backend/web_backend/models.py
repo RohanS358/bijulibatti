@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from sympy import true
 
 # Create your models here.
 class Substation(models.Model): # Not used
@@ -85,12 +86,25 @@ class Generator(models.Model): # use
     predicted_kwh = models.FloatField(default = 0.0, help_text = "Predicted energy consumption for next hour in kWh")
     predicted_kwh_24h = ArrayField(models.FloatField(), default=list, help_text = "Predicted energy consumption for next 24 hours in kWh", size = 24)
     predicted_kwh_week = ArrayField(models.FloatField(), default=list, help_text = "Predicted energy consumption for next week in kWh", size = 168) # 24 hours * 7 days = 168 hours in a week
-    timestamp = models.DateTimeField(auto_now_add = True)   
+    timestamp = models.DateTimeField(auto_now_add = True)  
 
 
 
 class MeterID(models.Model): # use
     meter_id = models.ForeignKey(Generator, on_delete=models.CASCADE)
+
+
+class meter_details(models.Model):
+    meter_id = models.CharField(primary_key = True, max_length = 50)
+    latitude = models.FloatField(null = True, blank = True)
+    longitude = models.FloatField(null = True, blank = True)
+
+
+class user_details(models.Model):
+    meter_id = models.CharField(primary_key=True, max_length = 50)
+    user_name = models.CharField(max_length = 100)
+    email = models.EmailField()
+    contact_number = models.CharField(max_length = 20)
 
 
 

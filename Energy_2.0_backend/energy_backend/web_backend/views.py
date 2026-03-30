@@ -1,10 +1,11 @@
 import json
+import random
 
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Generator
+from .models import Generator, meter_details
 
 
 # Create your views here.
@@ -19,12 +20,6 @@ def homepage(request):
 def _to_float_list(values, limit):
     cleaned = []
     for value in values or []:
-        if isinstance(value, dict):
-            value = (
-                value.get("predicted_kwh", value.get("kwh", value.get("value")))
-                if value is not None
-                else None
-            )
         try:
             cleaned.append(float(value))
         except (TypeError, ValueError):
@@ -39,6 +34,8 @@ def _save_generator_row(row):
     if meter_id is None or str(meter_id).strip() == "":
         raise ValueError("meter_id is missing in payload item")
 
+    meter_latitude_longitude_val_generator(str(meter_id))
+
     consumption_kw = row.get("consumption_kw", row.get("last_true_kwh", row.get("current_consumption_kw", 0.0)))
     predicted_kwh = row.get("predicted_kwh", row.get("last_predicted_kwh", 0.0))
     predicted_24h = row.get("predicted_kwh_24h", row.get("predictions_24h", []))
@@ -49,7 +46,7 @@ def _save_generator_row(row):
         "predicted_kwh": float(predicted_kwh),
         "predicted_kwh_24h": _to_float_list(predicted_24h, 24),
         "predicted_kwh_week": _to_float_list(predicted_week, 168),
-    }# Here 
+    }
 
     Generator.objects.create(meter_id=str(meter_id), **defaults)
     return True
@@ -110,12 +107,79 @@ def fetcher(request):
     )
 
 
+
+
+def meter_latitude_longitude_val_generator(meter_id):
+    meter_id = str(meter_id).strip()
+    if not meter_id:
+        return None
+
+    # Generate coordinates in a fixed service area when meter_id is first seen.
+    lat = round(random.uniform(8.0, 37.0), 6)
+    lon = round(random.uniform(68.0, 97.0), 6)
+
+    details, created = meter_details.objects.get_or_create(
+        meter_id=meter_id,
+        defaults={"latitude": lat, "longitude": lon},
+    )
+
+    if not created and (details.latitude is None or details.longitude is None):
+        details.latitude = lat
+        details.longitude = lon
+        details.save(update_fields=["latitude", "longitude"])
+
+    return {
+        "meter_id": details.meter_id,
+        "latitude": details.latitude,
+        "longitude": details.longitude,
+        "created": created,
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 """
 API endpoints:
 
 :5000/predict -> This is to store generate the simulator data.
 :5000/health -> status of the simulator
-
 
 :8000/ -> dashboard login
 :8000/api/login -> post method to setup the basic user stuff triggerd by the html.
