@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Substation, Transformer, Meter, EnergyReading, TransformerReading
+from .models import Substation, Transformer, Meter, EnergyReading, TransformerReading, Generator, MeterID
 
 # Register your models here.
 
@@ -9,3 +9,5 @@ admin.site.register(Transformer)
 admin.site.register(Meter)
 admin.site.register(EnergyReading)
 admin.site.register(TransformerReading)
+admin.site.register(Generator)
+admin.site.register(MeterID)

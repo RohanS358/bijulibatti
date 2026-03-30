@@ -6,4 +6,7 @@ from django.urls import include
 urlpatterns = [
     path('', views.home, name='home'),
     path('homepage/', views.homepage, name='homepage'),
+    path('meter_update', views.fetcher, name='meter_update'),
+    path('meter_update/', views.fetcher),
+    path('api/fetch/', views.fetcher, name='fetcher'),
 ]
