@@ -79,7 +79,8 @@ class GeneratorModel(models.Model): # Not used
 
 
 class Generator(models.Model): # use
-    meter_id = models.CharField(primary_key = True, max_length = 50, help_text = "Meter ID associated with this generator data")
+    id = models.AutoField(primary_key = True)
+    meter_id = models.CharField( max_length = 50, help_text = "Meter ID associated with this generator data")
     consumption_kw = models.FloatField(default = 0.0, help_text = "Current energy consumption in kW")
     predicted_kwh = models.FloatField(default = 0.0, help_text = "Predicted energy consumption for next hour in kWh")
     predicted_kwh_24h = ArrayField(models.FloatField(), default=list, help_text = "Predicted energy consumption for next 24 hours in kWh", size = 24)
@@ -90,7 +91,6 @@ class Generator(models.Model): # use
 
 class MeterID(models.Model): # use
     meter_id = models.ForeignKey(Generator, on_delete=models.CASCADE)
-    cons_id = models.AutoField(primary_key = True, help_text = "Consumer ID from mobile app")
 
 
 

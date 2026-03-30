@@ -19,6 +19,12 @@ def homepage(request):
 def _to_float_list(values, limit):
     cleaned = []
     for value in values or []:
+        if isinstance(value, dict):
+            value = (
+                value.get("predicted_kwh", value.get("kwh", value.get("value")))
+                if value is not None
+                else None
+            )
         try:
             cleaned.append(float(value))
         except (TypeError, ValueError):
@@ -45,8 +51,8 @@ def _save_generator_row(row):
         "predicted_kwh_week": _to_float_list(predicted_week, 168),
     }# Here 
 
-    _, created = Generator.objects.update_or_create(meter_id=str(meter_id), defaults=defaults) # This is the Generator model which is will get updated.
-    return created
+    Generator.objects.create(meter_id=str(meter_id), **defaults)
+    return True
 
 
 @csrf_exempt
@@ -109,6 +115,7 @@ API endpoints:
 
 :5000/predict -> This is to store generate the simulator data.
 :5000/health -> status of the simulator
+
 
 :8000/ -> dashboard login
 :8000/api/login -> post method to setup the basic user stuff triggerd by the html.
