@@ -1,3 +1,5 @@
+from pyexpat import model
+
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from sympy import true
@@ -98,6 +100,7 @@ class meter_details(models.Model):
     meter_id = models.CharField(primary_key = True, max_length = 50)
     latitude = models.FloatField(null = True, blank = True)
     longitude = models.FloatField(null = True, blank = True)
+    block_id = models.CharField(max_length = 50, null = True, blank = True)
 
 
 class user_details(models.Model):
@@ -105,6 +108,15 @@ class user_details(models.Model):
     user_name = models.CharField(max_length = 100)
     email = models.EmailField()
     contact_number = models.CharField(max_length = 20)
+
+class block_details(models.Model):
+    block_id = models.CharField(primary_key=True, max_length = 50)
+    latitude_top_left = models.FloatField(null = True, blank = True)
+    longitude_top_left = models.FloatField(null = True, blank = True)
+    latitude_bottom_right = models.FloatField(null = True, blank = True)
+    longitude_bottom_right = models.FloatField(null = True, blank = True)
+
+
 
 
 

@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Generator, meter_details
+from .models import Generator, block_details, meter_details
 
 
 # Create your views here.
@@ -128,12 +128,48 @@ def meter_latitude_longitude_val_generator(meter_id):
         details.longitude = lon
         details.save(update_fields=["latitude", "longitude"])
 
+    block_assign(details)
+
     return {
         "meter_id": details.meter_id,
         "latitude": details.latitude,
         "longitude": details.longitude,
         "created": created,
     }
+
+
+def block_assign(meter_obj):
+    """Assign a block_id to a meter_details row based on lat/lon bounding box."""
+    if meter_obj is None or meter_obj.latitude is None or meter_obj.longitude is None:
+        return None
+
+    meter_lat = float(meter_obj.latitude)
+    meter_lon = float(meter_obj.longitude)
+
+    matched_block_id = None
+    for block in block_details.objects.all():
+        if None in (
+            block.latitude_top_left,
+            block.longitude_top_left,
+            block.latitude_bottom_right,
+            block.longitude_bottom_right,
+        ):
+            continue
+
+        lat_max = max(block.latitude_top_left, block.latitude_bottom_right)
+        lat_min = min(block.latitude_top_left, block.latitude_bottom_right)
+        lon_max = max(block.longitude_top_left, block.longitude_bottom_right)
+        lon_min = min(block.longitude_top_left, block.longitude_bottom_right)
+
+        if lat_min <= meter_lat <= lat_max and lon_min <= meter_lon <= lon_max:
+            matched_block_id = block.block_id
+            break
+
+    if meter_obj.block_id != matched_block_id:
+        meter_obj.block_id = matched_block_id
+        meter_obj.save(update_fields=["block_id"])
+
+    return matched_block_id
 
 
 
