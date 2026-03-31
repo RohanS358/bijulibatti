@@ -9,4 +9,5 @@ urlpatterns = [
     path('meter_update', views.fetcher, name='meter_update'),
     path('meter_update/', views.fetcher),
     path('api/fetch/', views.fetcher, name='fetcher'),
+    path('api/get_block_by_meter/', views.get_block_by_meter, name='get_block_by_meter'),
 ]

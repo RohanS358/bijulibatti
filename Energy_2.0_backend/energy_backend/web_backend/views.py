@@ -1,3 +1,29 @@
+from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponse
+
+# API endpoint to get block id and block details for a given meter_id
+@csrf_exempt
+@require_GET
+def get_block_by_meter(request):
+    meter_id = request.GET.get('meter_id')
+    if not meter_id:
+        return JsonResponse({'status': 'error', 'message': 'meter_id is required'}, status=400)
+    try:
+        meter = meter_details.objects.select_related('block_id').get(meter_id=meter_id)
+    except meter_details.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Meter not found'}, status=404)
+    block = meter.block_id
+    if not block:
+        return JsonResponse({'status': 'error', 'message': 'Block not assigned for this meter'}, status=404)
+    block_data = {
+        'block_id': block.block_id,
+        'latitude_top_left': block.latitude_top_left,
+        'longitude_top_left': block.longitude_top_left,
+        'latitude_bottom_right': block.latitude_bottom_right,
+        'longitude_bottom_right': block.longitude_bottom_right,
+    }
+    return JsonResponse({'status': 'ok', 'block_id': block.block_id, 'block_details': block_data})
 import json
 import random
 
@@ -34,7 +60,13 @@ def _save_generator_row(row):
     if meter_id is None or str(meter_id).strip() == "":
         raise ValueError("meter_id is missing in payload item")
 
-    meter_latitude_longitude_val_generator(str(meter_id))
+    meter_id = str(meter_id).strip()
+    meter_latitude_longitude_val_generator(meter_id)
+
+    try:
+        meter_obj = meter_details.objects.get(meter_id=meter_id)
+    except meter_details.DoesNotExist as exc:
+        raise ValueError(f"meter_details row not found for meter_id={meter_id}") from exc
 
     consumption_kw = row.get("consumption_kw", row.get("last_true_kwh", row.get("current_consumption_kw", 0.0)))
     predicted_kwh = row.get("predicted_kwh", row.get("last_predicted_kwh", 0.0))
@@ -48,7 +80,7 @@ def _save_generator_row(row):
         "predicted_kwh_week": _to_float_list(predicted_week, 168),
     }
 
-    Generator.objects.create(meter_id=str(meter_id), **defaults)
+    Generator.objects.create(meter_id=meter_obj, **defaults)
     return True
 
 
