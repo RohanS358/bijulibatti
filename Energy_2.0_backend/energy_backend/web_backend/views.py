@@ -40,6 +40,7 @@ def home(request):
     return HttpResponse('This is the response from the home view of the web_backend')
 
 
+@csrf_exempt
 def get_meter_details(request):
     meter_id = request.GET.get('meter_id')
     if not meter_id:
@@ -66,7 +67,7 @@ def get_meter_details(request):
         'longitude': meter.longitude,
         'block_id': meter.block_id.block_id if meter.block_id else None,
     }
-    return JsonResponse({'status': 'ok', 'meter_details': meter_data, 'block_details': block_data}) 
+    return JsonResponse({'status': 'ok', 'meter_details': meter_data, 'block_details': block_data})
 
 def homepage(request):
     return home(request)
