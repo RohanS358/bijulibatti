@@ -40,6 +40,34 @@ def home(request):
     return HttpResponse('This is the response from the home view of the web_backend')
 
 
+def get_meter_details(request):
+    meter_id = request.GET.get('meter_id')
+    if not meter_id:
+        return JsonResponse({'status': 'error', 'message': 'meter_id is required'}, status=400)
+    try:
+        meter = meter_details.objects.select_related('block_id').get(meter_id=meter_id)
+    except meter_details.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Meter not found'}, status=404)
+
+    block_data = None
+    if meter.block_id:
+        block = meter.block_id
+        block_data = {
+            'block_id': block.block_id,
+            'latitude_top_left': block.latitude_top_left,
+            'longitude_top_left': block.longitude_top_left,
+            'latitude_bottom_right': block.latitude_bottom_right,
+            'longitude_bottom_right': block.longitude_bottom_right,
+        }
+
+    meter_data = {
+        'meter_id': meter.meter_id,
+        'latitude': meter.latitude,
+        'longitude': meter.longitude,
+        'block_id': meter.block_id.block_id if meter.block_id else None,
+    }
+    return JsonResponse({'status': 'ok', 'meter_details': meter_data, 'block_details': block_data}) 
+
 def homepage(request):
     return home(request)
 
@@ -82,6 +110,11 @@ def _save_generator_row(row):
 
     Generator.objects.create(meter_id=meter_obj, **defaults)
     return True
+
+
+
+
+
 
 
 @csrf_exempt

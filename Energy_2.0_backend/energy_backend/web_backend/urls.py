@@ -10,4 +10,5 @@ urlpatterns = [
     path('meter_update/', views.fetcher),
     path('api/fetch/', views.fetcher, name='fetcher'),
     path('api/get_block_by_meter/', views.get_block_by_meter, name='get_block_by_meter'),
-]
+    path('api/get_meter_details/', views.get_meter_details, name='get_meter_details'),
+ ]
