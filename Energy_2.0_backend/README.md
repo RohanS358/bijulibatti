@@ -66,6 +66,80 @@ Project-level URL routing includes web_backend at root and admin under /admin/.
 6. GET /api/get_block_by_meter/?meter_id=<METER_ID>
 7. GET/POST /admin/
 
+### 5.2 Endpoint-Wise Request and Response Specification
+
+1. GET /
+   - Expected request:
+     - Method: GET
+     - Query params: none
+     - Body: none
+   - Response:
+     - Status: 200
+     - Content-Type: text/html; charset=utf-8
+     - Body: This is the response from the home view of the web_backend
+
+2. GET /homepage/
+   - Expected request:
+     - Method: GET
+     - Query params: none
+     - Body: none
+   - Response:
+     - Status: 200
+     - Content-Type: text/html; charset=utf-8
+     - Body: This is the response from the home view of the web_backend
+
+3. POST /meter_update, POST /meter_update/, POST /api/fetch/
+   - Expected request:
+     - Method: POST
+     - Headers: Content-Type: application/json
+     - Body: JSON payload in one of the following shapes:
+       - Single object
+       - Array of objects
+       - Object containing a data array
+   - Minimum per record:
+     - meter_id is required and must be non-empty.
+   - Response:
+     - Status: 200 when all rows are valid.
+     - Status: 207 when one or more rows fail but request is processed.
+     - Status: 400 for invalid JSON or unsupported top-level structure.
+     - JSON format:
+
+```json
+{
+  "status": "ok",
+  "received": 1,
+  "created": 1,
+  "updated": 0,
+  "errors": []
+}
+```
+
+4. GET /api/get_block_by_meter/?meter_id=<METER_ID>
+   - Expected request:
+     - Method: GET
+     - Query params:
+       - meter_id (required)
+     - Body: none
+   - Response:
+     - Status: 200 on success with block data.
+     - Status: 400 when meter_id is missing.
+     - Status: 404 when meter is not found or no block is assigned.
+     - Success JSON format:
+
+```json
+{
+  "status": "ok",
+  "block_id": "BLK-01",
+  "block_details": {
+    "block_id": "BLK-01",
+    "latitude_top_left": 28.61,
+    "longitude_top_left": 77.19,
+    "latitude_bottom_right": 28.58,
+    "longitude_bottom_right": 77.24
+  }
+}
+```
+
 ## 6. Data Model Report
 
 ### 6.1 Generator
